@@ -1,0 +1,44 @@
+-- 1
+select od.*, (select customer_id from orders as o where od.order_id = o.id) as customer_id
+from order_details as od
+
+-- 2
+
+select od.*
+from order_details as od
+where order_id in (select o.id from orders as o where o.shipper_id = 3)
+
+-- 3
+
+select temp.order_id, avg(temp.quantity) as avg_quantity
+from (select * from order_details as od where od.quantity > 10 ) as temp
+group by temp.order_id
+
+-- 4
+WITH temp AS (
+    SELECT order_id, quantity
+    FROM order_details
+    WHERE quantity > 10
+)
+select  order_id, avg(quantity) as avg_quantity from temp
+group by order_id
+
+
+-- 5
+DROP FUNCTION IF EXISTS DivideBy;
+
+DELIMITER //
+
+CREATE FUNCTION DivideBy(first_num FLOAT, second_num FLOAT)
+RETURNS FLOAT
+DETERMINISTIC
+NO SQL
+BEGIN
+    DECLARE result FLOAT;
+    SET result = first_num / second_num;
+    RETURN result;
+END //
+
+DELIMITER ;
+
+select quantity, id, DivideBy(quantity, 2) as divide_by_2 from order_details as od
